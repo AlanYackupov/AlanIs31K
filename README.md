@@ -19,6 +19,7 @@
 ![image](https://github.com/user-attachments/assets/447af340-39fa-4470-b60b-05078256733a)
 
 ## Activity диаграмма
+![image](https://i.imgur.com/Y4qbe4c.png)
 
 
 # Готово, тепреь вы можете слушать и скачивать музыку Бесплатно
