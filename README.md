@@ -1,6 +1,3 @@
-
-# Mod Vk
-
 # Mod Vk
 
 >Это проверка Feature branch
