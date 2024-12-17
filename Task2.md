@@ -56,7 +56,7 @@ const jwt = require('jsonwebtoken');
 
 const router = express.Router();
 
-let users = []; // Массив для хранения пользователей
+let users = []; 
 
 // Регистрация
 router.post('/signup', async (req, res) => {
@@ -151,5 +151,105 @@ router.delete('/:id', authenticate, (req, res) => {
 
 module.exports = router;
 ```
+### написание list.js точно так же как и tasks.js так как функционал один и тот же
+```java
+const express = require('express');
+const jwt = require('jsonwebtoken');
 
+const router = express.Router(); // Исправлено: добавлены скобки
+
+let lists = []; // Массив для хранения списков
+
+// Middleware для проверки токена
+const authenticate = (req, res, next) => {
+    const authHeader = req.headers['authorization']; // Получаем заголовок авторизации
+    const token = authHeader && authHeader.split(' ')[1]; // Извлекаем токен из заголовка
+
+    if (!token) return res.status(403).send('Требуется токен'); // Если токена нет, возвращаем 403
+
+    jwt.verify(token, 'secret', (err, decoded) => {
+        if (err) return res.status(401).send('Неверный токен'); // Если токен недействителен, возвращаем 401
+        req.user = decoded; // Сохраняем информацию о пользователе в запросе
+        next(); // Переходим к следующему middleware
+    });
+};
+
+// Создание списка
+router.post('/', authenticate, (req, res) => {
+    const list = {
+        id: lists.length + 1,
+        name: req.body.name,
+        username: req.user.username // имя пользователя из токена
+    };
+    lists.push(list);
+    res.status(201).json(list); 
+});
+
+// Получение всех списков
+router.get('/', authenticate, (req, res) => {
+    const userLists = lists.filter(list => list.username === req.user.username); 
+    res.json(userLists); 
+});
+
+// Обновление списка
+router.put('/:id', authenticate, (req, res) => {
+    const list = lists.find(l => l.id === parseInt(req.params.id) && l.username === req.user.username); 
+    if (!list) return res.status(404).send('Список не найден'); // Если список не найден, возвращаем 404
+
+    list.name = req.body.name !== undefined ? req.body.name : list.name; 
+    res.json(list); 
+});
+
+// Удаление списка
+router.delete('/:id', authenticate, (req, res) => {
+    lists = lists.filter(l => l.id !== parseInt(req.params.id) || l.username !== req.user.username); 
+    res.status(204).send(); // статус 204 (Нет содержимого)
+});
+
+module.exports = router; 
+```
+## Основной файл сервера
+```java
+const express = require('express');
+const bodyParser = require('body-parser');
+const cors = require('cors');
+const authRoutes = require('./routes/auth');
+const taskRoutes = require('./routes/tasks');
+const listRoutes = require('./routes/lists');
+
+const app = express();
+app.use(cors());
+app.use(bodyParser.json());
+
+// Маршруты
+app.use('/auth', authRoutes);
+app.use('/tasks', taskRoutes);
+app.use('/lists', listRoutes);
+
+// Запуск сервера
+const PORT = process.env.PORT || 5000;
+app.listen(PORT, () => {
+    console.log(`Сервер запущен на порту ${PORT}`);
+});
+```
+
+## Запуск сервера
+
+**1. В терминале перейдите в папку вашего проекта и запустите сервер с помощью Node.js:**
+```bash
+node server.js
+```
+
+**2. чтобы сервер автоматически перезагружался при изменении кода,  можно использовать `nodemon`**
+```bash
+npm install -g nodemon
+```
+
+**3. Затем запустите сервер с помощью `nodemon`:**
+```bash
+nodemon server.js
+```
+
+# Тестирование Postman скрины снизу.
+> Для начало создаём папки для удобства и файлы которые будут проверять разработка backend.
 
